@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/BankingSoftwareSystem/bin
+/.vs/BankingSoftwareSystem/config
+/BankingSoftwareSystem/obj/Debug
