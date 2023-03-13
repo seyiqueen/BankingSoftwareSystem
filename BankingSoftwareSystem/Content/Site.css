@@ -23,8 +23,4 @@ textarea {
     max-width: 280px;
 }
 
-.navbar-inverse .navbar-toggle:hover,
-.navbar-inverse .navbar-toggle:focus {
-    background-color: #777;
-    border-color: #fff
-}
+

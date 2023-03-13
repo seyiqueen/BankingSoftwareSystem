@@ -1,0 +1,158 @@
+﻿@model BankingSoftwareSystem.Models.LoginViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <base href="/">
+    <title>Login</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    @Styles.Render("~/Content/app")
+
+    <style>
+        @@font-face {
+            font-family: "dropways";
+            src: url('../../fonts/dropways.ttf');
+        }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-wrap d-flex align-items-center flex-wrap justify-content-center">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-12 col-lg-12">
+                    <div id="notificationPanel" class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+                        <span id="notificationMessage"></span>
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="login-box bg-white box-shadow border-radius-10">
+                        <span style="color:maroon"
+                              class="fw-light text-center">
+                            @Html.ValidationSummary(false, null, new { @class = "text-danger" })
+                        </span>
+
+                        <div class="login-title">
+                            <h2 class="text-center text-primary">Login</h2>
+                        </div>
+                        <form method="post" action="Login" onsubmit="return validateForm()">
+                            @Html.HiddenFor(m => m.IsPinMode, new { @id = "isPinMode", @name = "IsPinMode" })
+
+                            <div class="col-md-12 col-sm-12 mb-20 text-center">
+                                <label class="weight-600">Sign In Option</label>
+                                <div class="row" style="display:flex; justify-content:center">
+                                    <div class="custom-control custom-radio mb-5">
+                                        <input type="radio" id="customRadio1" name="customRadio" class="custom-control-input" checked
+                                               onchange="checkboxToggled(event, 'pin')">
+                                        <label class="custom-control-label" for="customRadio1">PIN</label>
+                                    </div>
+                                    <div class="custom-control custom-radio mb-5" style="margin-left: 40px">
+                                        <input type="radio" id="customRadio2" name="customRadio" class="custom-control-input"
+                                               onchange="checkboxToggled(event, 'password')">
+                                        <label class="custom-control-label" for="customRadio2">Password</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="isPinSignIn">
+                                <div class="input-group custom">
+                                    <input type="text" class="form-control form-control-lg" placeholder="Account Number" autocomplete="off"
+                                           name="AccountNumber">
+                                    <div class="input-group-append custom">
+                                        <span class="input-group-text"><i class="icon-copy dw dw-user1"></i></span>
+                                    </div>
+                                </div>
+                                <div class="input-group custom">
+                                    <input type="password" class="form-control form-control-lg" placeholder="******" autocomplete="off" id="pinfield"
+                                           onkeypress="isValidPIN(event)" name="PIN">
+                                    <div class="input-group-append custom">
+                                        <span class="input-group-text"><i class="dw dw-padlock1"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="isPasswordSignIn">
+                                <div class="input-group custom">
+                                    <input type="text" class="form-control form-control-lg" placeholder="Username" autocomplete="off"
+                                           name="Username">
+                                    <div class="input-group-append custom">
+                                        <span class="input-group-text"><i class="icon-copy dw dw-user1"></i></span>
+                                    </div>
+                                </div>
+                                <div class="input-group custom">
+                                    <input type="password" class="form-control form-control-lg" placeholder="********" autocomplete="off"
+                                           name="Password">
+                                    <div class="input-group-append custom">
+                                        <span class="input-group-text"><i class="dw dw-padlock1"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="input-group mb-0">
+                                        <button class="btn btn-primary btn-lg btn-block"
+                                                type="submit">
+                                            Sign In
+                                        </button>
+                                    </div>
+                                    <div class="font-16 weight-600 pt-10 pb-10 text-center" data-color="#707373">OR</div>
+                                    <div class="input-group mb-0">
+                                        @Html.ActionLink("Register", "Register", null, new { @class = "btn btn-outline-primary btn-lg btn-block", style = "text-decoration:none" })
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    sessionStorage.clear();
+
+        document.getElementById('isPinSignIn').style.display = 'block';
+        document.getElementById('isPinMode').value = true;
+        document.getElementById('isPasswordSignIn').style.display = 'none';
+        document.getElementById('notificationPanel').style.display = 'none';
+
+        function checkboxToggled(event, type) {
+            if (type == 'pin') {
+                document.getElementById('isPinMode').value = true;
+                document.getElementById('isPinSignIn').style.display = 'block';
+                document.getElementById('isPasswordSignIn').style.display = 'none';
+            }
+            else {
+                document.getElementById('isPinMode').value = false;
+                document.getElementById('isPinSignIn').style.display = 'none';
+                document.getElementById('isPasswordSignIn').style.display = 'block';
+            }
+        }
+
+        function isValidPIN(event) {
+            var input = (event.which) ? event.which : event.keyCode;
+            if (input < 48 || input > 57) {
+                event.preventDefault();
+                return false;
+            }
+            else {
+                let secret = document.getElementById('pinfield').value;
+                if (secret.length == 6) {
+                    return false;
+                }
+                else {
+                    return true;
+                }
+            }
+        }
+
+        function validateForm() {
+
+        }</script>
+</body>
+</html>
