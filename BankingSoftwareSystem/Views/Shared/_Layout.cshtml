@@ -3,40 +3,135 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@ViewBag.Title - My ASP.NET Application</title>
-    @Styles.Render("~/Content/css")
-    @Scripts.Render("~/bundles/modernizr")
+    <title>@ViewBag.Title</title>
+    @Styles.Render("~/Content/app")
+    <style>
+        @@font-face {
+            font-family: "dropways";
+            src: url('../../fonts/dropways.ttf');
+        }
+
+        @@font-face {
+            font-family: "foundation-icons";
+            src: url('../../fonts/foundation-icons.ttf');
+        }
+    </style>
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse" title="more options">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+    <div class="header">
+        <div class="header-left">
+            <div class="menu-icon dw dw-menu" onclick="closeSideBar()"></div>
+            <h6><b style="cursor:default;" class="ml-5">BANKING SOFTWARE SYSTEM</b></h6>
+        </div>
+        <div class="header-right">
+            <div class="user-info-dropdown">
+                @*<h5 class="user-name" id="fullname"></h5>*@
+                <h6 class="mt-3" style="vertical-align:middle">Balance: £ <span id="currIcon" class=""> </span><span class="" id="currentbalancenav"></span></h6>
             </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Home", "Index", "Home")</li>
-                    <li>@Html.ActionLink("About", "About", "Home")</li>
-                    <li>@Html.ActionLink("Contact", "Contact", "Home")</li>
+        </div>
+    </div>
+
+    <div class="left-side-bar" id="custom-side-bar" style="width: auto">
+
+        <div class="brand-logo">
+
+            @Html.DropDownList("loggedInUserAccounts", ViewBag.LoggedInUserAccounts as SelectList, new { @class = "dropdown-item form-control", style = "color:black !important; background-color: white !important", @onChange = "SelectedValue(this)" })
+
+            
+            <div class="close-sidebar" data-toggle="left-sidebar-close">
+                <!--<i class="ion-close-round"></i>-->
+            </div>
+        </div>
+        <div class="menu-block customscroll">
+            <div class="sidebar-menu">
+                <ul id="accordion-menu">
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                        <div class="sidebar-small-cap">HOME</div>
+                    </li>
+                    <a href="/App/Index">
+                    <li class="dropdown-toggle no-arrow" style="cursor:pointer">
+                        <span class="micon dw dw-worldwide-1"></span>
+                        <span class="mtext" style="color:white">Dashboard</span>
+                    </li>
+                    </a>
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                        <div class="sidebar-small-cap">Transactions</div>
+                    </li>
+                    <a href="/Deposit/Index">
+                    <li class="dropdown-toggle no-arrow" style="cursor:pointer">
+                        <span class="micon dw dw-download"></span>
+                        <span class="mtext" style="color:white">Deposit</span>
+                    </li>
+                    </a>
+      
+                   
+                    </a>
+                    <li>
+                        <div class="dropdown-divider"></div>
+                    </li>
+                    <li>
+                        <div class="sidebar-small-cap">Settings</div>
+                    </li>
+                    <a href="/Portal/Login">
+                    <li class="dropdown-toggle no-arrow" style="cursor:pointer" onclick="navigateTo('Login')">
+                        <span class="micon dw dw-logout"></span>
+                        <span class="mtext" style="color:white">Logout</span>
+                    </li>
+                    </a>
                 </ul>
             </div>
         </div>
     </div>
-    <div class="container body-content">
+    <div id="cusotom-mobile-overlay" class="mobile-menu-overlay"></div>
+
+    <div class="main-container">
         @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
-        </footer>
     </div>
 
-    @Scripts.Render("~/bundles/jquery")
-    @Scripts.Render("~/bundles/bootstrap")
-    @RenderSection("scripts", required: false)
+    <script>
+
+        
+        function SelectedValue(data) {
+            const currentRoute = location.href;
+            const controller = currentRoute.split('/')[3];
+            window.location.href = '/' + controller + '/SwitchAccount?uid=' + data.value;
+        }
+
+        function closeSideBar() {
+            document.getElementById('cusotom-mobile-overlay')?.classList.toggle('show');
+            document.getElementById('custom-side-bar')?.classList.toggle('open');
+
+        }
+
+        
+
+        function navigateTo(page) {
+            if (page == 'Login') {
+                $.ajax({
+                    url: "/Portal/Login",
+                    cache: false,
+                })
+            }
+            else {
+                document.getElementById('cusotom-mobile-overlay')?.classList.toggle('show');
+                document.getElementById('custom-side-bar')?.classList.toggle('open');
+                $.ajax({
+                    url: "/App/" + page,
+                    cache: false,
+                    success: function (data) {
+                        console.log(data);
+                    }
+                })
+            }
+        }</script>
+
+    @*@Scripts.Render("~/bundles/app")*@
+
 </body>
 </html>

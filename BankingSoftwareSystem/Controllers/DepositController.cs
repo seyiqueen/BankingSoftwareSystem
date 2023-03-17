@@ -8,16 +8,17 @@ using System.Web.Mvc;
 
 namespace BankingSoftwareSystem.Controllers
 {
-    public class AppController : Controller
+    public class DepositController : Controller
     {
-        // GET: App
+        // GET: Deposit
         public ActionResult Index()
+        
         {
             var userAccId = Session[ApplicationConstants.Session_User_Account_Id];
             if (userAccId == null)
                 return RedirectToAction("Login", "Portal");
 
-            var model = new DashboardViewModel();
+            var model = new DepositViewModel();
 
             var userId = Session[ApplicationConstants.Session_User_Id];
 
@@ -28,12 +29,10 @@ namespace BankingSoftwareSystem.Controllers
             MySqlCommand command = new MySqlCommand(query, conn);
             command.ExecuteNonQuery();
 
-            command = new MySqlCommand($"SELECT * FROM UserAccounts WHERE UserId = '{userId}'", conn);
+            command = new MySqlCommand($"SELECT u.Id, u.AccountNumber, u.Balance, a.Type, u.FirstName, u.LastName FROM UserAccounts u LEFT JOIN AccountTypes a ON a.Id = u.AccountTypeId WHERE u.UserId = '{userId}'", conn);
             MySqlDataReader dataReader = command.ExecuteReader();
 
             List<SelectListItem> LoggedInUserAccounts = new List<SelectListItem>();
-
-            string fullName = string.Empty;
 
             while (dataReader.Read())
             {
@@ -44,51 +43,14 @@ namespace BankingSoftwareSystem.Controllers
                     Selected = dataReader.GetString("Id") == (string)userAccId,
                 });
 
-                if (dataReader.GetString("Id") == (string)userAccId)
-                {
-                    model.FirstName = dataReader.GetString("FirstName");
-                    model.LastName = dataReader.GetString("LastName");
-                    fullName = dataReader.GetString("FirstName") + " " + dataReader.GetString("LastName");
-                }
             }
-
             ViewBag.LoggedInUserAccounts = LoggedInUserAccounts;
             model.LoggedInUserAccounts = LoggedInUserAccounts;
             dataReader.Close();
 
-            MySqlCommand command2 = new MySqlCommand($"SELECT * FROM AccountStatements WHERE TransferFromUserAccountId = '{userAccId}' OR TransferToUserAccountId = '{userAccId}'", conn);
-            MySqlDataReader dataReader2 = command2.ExecuteReader();
-
-            List<TransactionStatementModel> TransactionStatements = new List<TransactionStatementModel>();
-
-            while (dataReader2.Read())
-            {
-                TransactionStatements.Add(new TransactionStatementModel
-                {
-                    TransferToUserAccountId = dataReader2.GetString("TransferToUserAccountId"),
-                    Amount = (decimal)dataReader2.GetFloat("Amount"),
-                    IsOwnTransfer = dataReader2.GetBoolean("IsOwnTransfer"),
-                    Narration = dataReader2.GetString("Narration"),
-                    TransferDate = dataReader2.GetDateTime("TransferDate"),
-                    TransferFromUserAccountId = dataReader2.GetString("TransferFromUserAccountId")
-                });
-            }
-
-            dataReader2.Close();
-
-            List<int> records = new List<int>();
-
-            for (int i = 1; i <= 12; i++)
-            {
-                var data = TransactionStatements.Where(x => x.TransferDate.Month == i).ToList();
-                records.Add(data.Count);
-            }
-
             conn.Close();
 
-            ViewBag.GraphData = string.Join(",", records);
-
-            return View("Dashboard", model);
+            return View("Index", model);
         }
         public JsonResult GetUserData()
         {
@@ -140,6 +102,40 @@ namespace BankingSoftwareSystem.Controllers
         public ActionResult SwitchAccount(string uid)
         {
             Session[ApplicationConstants.Session_User_Account_Id] = uid;
+            return RedirectToAction("Index");
+        }
+        public ActionResult InitiateDeposit(decimal amount)
+        {
+            MySqlConnection conn = new MySqlConnection(ApplicationConstants.DatabaseConnectionString);
+            conn.Open();
+
+            var query = $"USE {ApplicationConstants.DB};";
+            MySqlCommand command = new MySqlCommand(query, conn);
+            command.ExecuteNonQuery();
+
+            var userAccId = Session[ApplicationConstants.Session_User_Account_Id];
+
+            command = new MySqlCommand($"SELECT * FROM UserAccounts WHERE Id = '{userAccId}'", conn);
+            var dataReader = command.ExecuteReader();
+
+            decimal balance = 0m;
+
+            while (dataReader.Read())
+            {
+                balance = dataReader.GetDecimal("Balance");
+            }
+            var newBalance = balance + amount;
+
+            dataReader.Close();
+
+            var command2 = new MySqlCommand($"UPDATE UserAccounts SET Balance = {newBalance} WHERE Id = '{userAccId}'",conn);
+            command2.ExecuteNonQuery();
+            var command3 = new MySqlCommand($"INSERT INTO AccountStatements (TransferToUserAccountId, TransferFromUserAccountId, Amount, IsOwnTransfer, TransferDate, Narration) " +
+                                            $"VALUES ('{userAccId}', '{userAccId}', {amount}, 1, '{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}', 'Deposit')", conn);
+
+            command3.ExecuteNonQuery();
+
+            conn.Close();
             return RedirectToAction("Index");
         }
     }
