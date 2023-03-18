@@ -1,0 +1,76 @@
+﻿@model BankingSoftwareSystem.Models.WithdrawViewModel
+@{
+    ViewBag.Title = "Index";
+}
+
+<div class="row">
+    <div class="col-xl-12 mb-30">
+        <div class="card-box pd-30 height-100-p">
+            <div class="progress-box text-center">
+                <h4>Withdraw</h4>
+                <h6>Withdraw money from your Account</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="balance" value="@Model.CurrentBalance" />
+
+
+<div id="transferPanel">
+    <div class="col-xl-12 mb-30 mb-30 text-center">
+        <div class="card-box pd-30 height-100-p">
+            <div class="progress-box text-center">
+                <h5>How much do you want to Withdraw?</h5>
+                <input type="number" class="form-control form-control-lg" placeholder="Amount" autocomplete="off" id="amount" name="amount" min="1">
+                <br />
+                <button type="button" class="btn btn-primary" onclick="initiateDeposit()">Withdraw</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Scripts.Render("~/bundles/app")
+<script>
+    //let currentBalance = document.getElementById('balance').value;
+    //document.getElementById('currentbalance').innerHTML = (Math.round(currentBalance * 1 * 100) / 100).toFixed(2);
+    //// used for Balance in navigation bar top right
+    //document.getElementById('currentbalancenav').innerHTML = (Math.round(currentBalance * 1 * 100) / 100).toFixed(2);
+
+    function initiateDeposit() {
+        let amount = document.getElementById('amount').value;
+        if (amount < 1) {
+            document.getElementById('errorNotificationPanel').style.display = 'block';
+            document.getElementById('errorMessage').innerHTML = '* Please Specify an Amount greater than 0.';
+            document.getElementById('successMessage').innerHTML = '';
+            document.getElementById('successNotificationPanel').style.display = 'none';
+        }
+        else {
+
+            $.ajax({
+                url: "/Withdraw/InitiateWithdraw?amount=" + amount,
+                cache: false,
+                success: function (data) {
+                    console.log(data)
+                    location.reload()
+                }
+            })
+        }
+    }
+</script>
+<script>
+    $.ajax({
+        url: "/App/GetUserData",
+        cache: false,
+        success: function (data) {
+
+            // used for Balance in navigation bar top right
+            document.getElementById('currentbalancenav').innerHTML = (Math.round(data.balance * 1 * 100) / 100).toFixed(2);
+        }
+    })</script>
+
+
+
+
+
+
