@@ -154,6 +154,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\TransactionStatementsController.cs" />
     <Compile Include="Controllers\AppController.cs" />
     <Compile Include="Controllers\DepositController.cs" />
     <Compile Include="Controllers\OutboundController.cs" />
@@ -232,6 +233,7 @@
     <Content Include="Views\Deposit\Index.cshtml" />
     <Content Include="Views\Withdraw\Index.cshtml" />
     <Content Include="Views\Outbound\OutboundTransfer.cshtml" />
+    <Content Include="Views\TransactionStatements\TransactionStatements.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

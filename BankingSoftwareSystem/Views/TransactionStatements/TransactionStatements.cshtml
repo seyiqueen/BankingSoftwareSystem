@@ -1,0 +1,191 @@
+﻿@model BankingSoftwareSystem.Models.TransactionStatementsViewModel
+
+@{
+    ViewBag.Title = "TransactionStatements";
+}
+
+<style>
+    @@font-face {
+        font-family: "foundation-icons";
+        src: url('../../fonts/foundation-icons.ttf');
+    }
+</style>
+
+<div class="row">
+    <div class="col-xl-12 mb-30">
+        <div class="card-box pd-30 height-100-p">
+            <div class="progress-box text-center">
+                <h4>Transaction Statements</h4>
+                <h6>View transaction History for Account Number: @Model.AccountNumber</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-xl-12 mb-30 text-center">
+        <div class="card-box pd-30 height-100-p">
+            <div class="progress-box text-center">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Timeline</label>
+                            @Html.DropDownList("dates", ViewBag.Dates as SelectList, new { @class = "js-example-basic-single w-100 form-control", @onChange = "dateRangeSelected(event.target.value)" })
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="startDatePicker">
+                        <div class="form-group">
+                            <label>From </label>
+                            <input type="date"
+                                   value="@Model.StartDate"
+                                   max="@Model.EndDate"
+                                   class="form-control" id="startDate" />
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="endDatePicker">
+                        <div class="form-group">
+                            <label>To </label>
+                            <input type="date"
+                                   value="@Model.EndDate"
+                                   min="@Model.StartDate"
+                                   max="@Model.TodaysDate"
+                                   class="form-control" id="endDate" />
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="dateRow">
+                        <div class="form-group">
+                            <label>Action</label>
+                            <button type="button"
+                                    style="color:white"
+                                    onclick="getAccountStatement()"
+                                    class="form-sample form-control btn btn-primary me-2">
+                                Search
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-xl-12 mb-30 text-center">
+    <div class="card-box pd-30 height-100-p">
+        <div class="progress-box text-center">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Sender</th>
+                            <th scope="col">Sender Account Number</th>
+                            <th scope="col">Receiver</th>
+                            <th scope="col">Receiver Account Number</th>
+                            <th scope="col">Narration</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Amount (<i class="" id="currencyIcon"></i>)</th>
+                            <th scope="col">Transfer Type</th>
+                            <th scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int count = 1;}
+                        @foreach (var transactionStatement in Model.TransactionStatements)
+                        {
+                            var amount = transactionStatement.Amount;
+                            <tr>
+                                <th scope="row">@count</th>
+                                <td>@transactionStatement.Sender</td>
+                                <td>@transactionStatement.SenderAccountNumber</td>
+                                <td>@transactionStatement.Receiver</td>
+                                <td>@transactionStatement.ReceiverAccountNumber</td>
+                                <td>@transactionStatement.Narration</td>
+                                <td>@transactionStatement.TransferDate</td>
+                                <td>@amount</td>
+                                <td>@transactionStatement.TransactionType</td>
+                                <td>
+                                    @if (transactionStatement.IsOwnTransfer)
+                                    {
+                                        <span class="badge badge-success">Inbound</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-primary">Outbound</span>
+                                    }
+                                </td>
+                            </tr>
+
+                            { count = count + 1; }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Scripts.Render("~/bundles/app")
+
+<script>
+    window.onload = function (e) {
+        console.log(34);
+    };
+
+    let conversion = sessionStorage.getItem('from-to');
+    let rate = sessionStorage.getItem(conversion);
+
+    let icon = sessionStorage.getItem('selectedCurrencyIcon');
+    document.getElementById('currencyIcon').setAttribute('class', '');
+    document.getElementById('currencyIcon').classList.add('icon-copy', icon);
+
+    $.ajax({
+        url: "/App/GetUserData",
+        cache: false,
+        success: function (data) {
+            // used for Balance in navigation bar top right
+            document.getElementById('currentbalancenav').innerHTML = (Math.round(data.balance * rate * 100) / 100).toFixed(2);
+        }
+    })
+
+    let dates = document.getElementById('dates');
+    let _selectedIndex = dates.options.selectedIndex;
+    let val = dates[_selectedIndex].value;
+
+    if (val != -1) {
+        document.getElementById('dateRow').style.display = 'none';
+        document.getElementById('startDatePicker').style.display = 'none';
+        document.getElementById('endDatePicker').style.display = 'none';
+    }
+    else {
+        document.getElementById('dateRow').style.display = 'block';
+        document.getElementById('startDatePicker').style.display = 'block';
+        document.getElementById('endDatePicker').style.display = 'block';
+    }
+
+    function dateRangeSelected(rangeId) {
+        if (rangeId == -1) {
+            document.getElementById('startDatePicker').style.display = 'block';
+            document.getElementById('endDatePicker').style.display = 'block';
+            document.getElementById('dateRow').style.display = 'block';
+        }
+        else {
+            document.getElementById('dateRow').style.display = 'none';
+            document.getElementById('startDatePicker').style.display = 'none';
+            document.getElementById('endDatePicker').style.display = 'none';
+            window.location.href = '/TransactionStatements/Range?id=' + rangeId + '';
+        }
+    }
+
+
+    function getAccountStatement() {
+        let _startDate = document.getElementById('startDate').value;
+        let _endDate = document.getElementById('endDate').value;
+        window.location.href = '/TransactionStatements/Range?id=-1&startDate=' + _startDate + '&endDate=' + _endDate;
+    }
+
+</script>
+
+
+
+
+
