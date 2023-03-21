@@ -1,0 +1,190 @@
+﻿@model BankingSoftwareSystem.Models.OutboundTransferViewModel
+
+@{
+    ViewBag.Title = "OutboundTransfer";
+}
+
+<style>
+    @@font-face {
+        font-family: "foundation-icons";
+        src: url('../../fonts/foundation-icons.ttf');
+    }
+</style>
+
+<div id="errorNotificationPanel" class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+    <span id="errorMessage"></span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div id="successNotificationPanel" class="alert alert-success alert-dismissible fade show text-center" role="alert">
+    <span id="successMessage"></span>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="row">
+    <div class="col-xl-12 mb-30">
+        <div class="card-box pd-30 height-100-p">
+            <div class="progress-box text-center">
+                <h4>Outbound Transfer</h4>
+                <h6>An easy way to make transfer to other Customer Accounts</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="balance" value="@Model.CurrentBalance" />
+
+<div class="row card-box mb-10">
+    <div class="col-xl-6 mt-30 mb-30">
+        <div class="card-box pd-30 height-100-p">
+            <div class="progress-box text-center">
+                <h4>Transfer From</h4>
+                <h5>Account Number: @Model.AccountNumber</h5>
+                <h6><i id="currencyIcon" class=""></i> <span id="currentbalance"></span></h6>
+                <h6>@Model.AccountType</h6>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 mt-30 mb-30">
+        <div class="card-box pd-30 height-100-p">
+            <div class="progress-box text-center">
+                <h5>Please Enter the Account Number to transfer to:</h5>
+                <input class="form-control form-control-sm" placeholder="Account Number" autocomplete="off" oninput="hasTamperedAccountNumber()" id="accountNumberToTransferTo">
+                <button type="button" class="btn btn-primary" onclick="verifyReceiver()">Verify Account Number</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-box mb-10" id="step2">
+    <div class="row">
+        <div class="col-xl-6 mt-30 mb-30">
+            <div class="card-box pd-30 height-100-p">
+                <div class="progress-box text-center">
+                    <h4>Transfer To</h4>
+                    <h5>Account Number: <span id="receiverAccountNumber"></span></h5>
+                    <h6><span id="receiverFullName"></span></h6>
+                    <h6><span id="receiverAccountType"></span></h6>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-6 mt-30 mb-30">
+            <div class="card-box pd-30 height-100-p">
+                <div class="progress-box text-center">
+                    <h5>Narration:</h5>
+                    <input class="form-control form-control-lg" placeholder="Narration" autocomplete="off" id="narration" name="narration">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6 mt-30 mb-30">
+        <div class="card-box pd-30 height-100-p">
+            <div class="progress-box text-center">
+                <h5>How much do you want to transfer?</h5>
+                <input type="number" class="form-control form-control-sm" placeholder="Amount" autocomplete="off" id="amount" name="amount" min="1">
+                <button type="button" class="btn btn-primary" onclick="initiateTransfer()">Transfer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    let icon = sessionStorage.getItem('selectedCurrencyIcon');
+    document.getElementById('currencyIcon').setAttribute('class', '');
+    document.getElementById('currencyIcon').classList.add('icon-copy', icon);
+
+    let conversion = sessionStorage.getItem('from-to');
+    let rate = sessionStorage.getItem(conversion);
+
+    let currentBalance = document.getElementById('balance').value;
+    document.getElementById('currentbalance').innerHTML = (Math.round(currentBalance * 1 * 100) / 100).toFixed(2);
+    // used for Balance in navigation bar top right
+    document.getElementById('currentbalancenav').innerHTML = (Math.round(currentBalance * 1 * 100) / 100).toFixed(2);
+
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('errorNotificationPanel').style.display = 'none';
+    document.getElementById('successNotificationPanel').style.display = 'none';
+
+    function hasTamperedAccountNumber() {
+        document.getElementById('step2').style.display = 'none';
+    }
+
+    function verifyReceiver() {
+        document.getElementById('errorNotificationPanel').style.display = 'none';
+
+        let accountNumberToTransferTo = document.getElementById('accountNumberToTransferTo').value;
+        if (accountNumberToTransferTo.length > 0) {
+            $.ajax({
+                url: "/Outbound/VerifyAccountNumber?accountNumber=" + accountNumberToTransferTo,
+                cache: false,
+                success: function (data) {
+                    if (data.error == 'notfound') {
+                        document.getElementById('errorNotificationPanel').style.display = 'block';
+                        document.getElementById('errorMessage').innerHTML = '* Unable to find Account Number.';
+                    }
+                    else if (data.error == 'same') {
+                        document.getElementById('errorNotificationPanel').style.display = 'block';
+                        document.getElementById('errorMessage').innerHTML = '* You cannot transfer to the same Account Number as the Sender.';
+                    }
+                    else if (data.error == 'invalid') {
+                        document.getElementById('errorNotificationPanel').style.display = 'block';
+                        document.getElementById('errorMessage').innerHTML = '* Invalid Account Number provided.';
+                    }
+                    else if (data.error == '') {
+                        document.getElementById('step2').style.display = 'block';
+                        document.getElementById('errorNotificationPanel').style.display = 'none';
+                        document.getElementById('receiverAccountNumber').innerHTML = data.receiverAccountNumber;
+                        document.getElementById('receiverFullName').innerHTML = data.receiverFullName;
+                        document.getElementById('receiverAccountType').innerHTML = data.receiverAccountType;
+                    }
+                }
+            })
+        }
+    }
+
+    function initiateTransfer() {
+        let amount = document.getElementById('amount').value;
+        if (amount < 1) {
+            document.getElementById('errorNotificationPanel').style.display = 'block';
+            document.getElementById('errorMessage').innerHTML = '* Please Specify an Amount greater than 0.';
+            document.getElementById('successMessage').innerHTML = '';
+            document.getElementById('successNotificationPanel').style.display = 'none';
+        }
+        else {
+            let accountNumberToTransferTo = document.getElementById('accountNumberToTransferTo').value;
+            let narration = document.getElementById('narration').value;
+
+            $.ajax({
+                url: "/Outbound/TransferMoney?amount=" + amount + "&accountNumber=" + accountNumberToTransferTo + "&narration=" + narration,
+                cache: false,
+                success: function (data) {
+                    if (!data.success) {
+                        document.getElementById('errorMessage').innerHTML = data.message;
+                        document.getElementById('errorNotificationPanel').style.display = 'block';
+                        document.getElementById('successNotificationPanel').style.display = 'none';
+                    }
+                    else {
+                        document.getElementById('errorNotificationPanel').style.display = 'none';
+                        document.getElementById('successNotificationPanel').style.display = 'block';
+                        let currentBalance = document.getElementById('currentbalance').innerHTML;
+                        currentBalance = (Math.round((currentBalance - amount) * 100) / 100).toFixed(2);
+                        document.getElementById('currentbalance').innerHTML = currentBalance;
+                        document.getElementById('currentbalancenav').innerHTML = currentBalance;
+                        document.getElementById('successMessage').innerHTML = data.message;
+                    }
+                }
+            })
+        }
+    }
+
+</script>
+
+@Scripts.Render("~/bundles/app")
