@@ -171,7 +171,7 @@ namespace BankingSoftwareSystem.Controllers
                 {
                     var todaysDate = DateTime.Now.ToUniversalTime();
 
-                    MySqlCommand command6 = new MySqlCommand($"INSERT INTO AccountStatements (TransferToUserAccountId, TransferFromUserAccountId, Amount, IsOwnTransfer, TransferDate, Narration) VALUES ('{receiverId}', '{Session[ApplicationConstants.Session_User_Account_Id]}', {amount}, true, '{todaysDate.ToString("yyyy-MM-dd HH:mm:ss")}', '{narration}') ", conn);
+                    MySqlCommand command6 = new MySqlCommand($"INSERT INTO AccountStatements (TransferToUserAccountId, TransferFromUserAccountId, Amount, IsOwnTransfer, TransferDate, Narration) VALUES ('{receiverId}', '{Session[ApplicationConstants.Session_User_Account_Id]}', {amount}, false, '{todaysDate.ToString("yyyy-MM-dd HH:mm:ss")}', '{narration}') ", conn);
                     int rowCount4 = command6.ExecuteNonQuery();
 
                     if (rowCount4 > 0)
