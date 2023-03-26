@@ -18,7 +18,19 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-xl-8 mb-30">
+            <div class="card-box height-100-p pd-20">
+                <div class="d-flex flex-wrap justify-content-between align-items-center pb-0 pb-md-3">
+                    <div class="h5 mb-md-0">Transaction Overview</div>
+                </div>
+                <div id="activities-chart"></div>
+            </div>
+        </div>
+      
+    </div>
 </div>
+<input id="graphDataValues" style="height: 0; width: 0" value="@ViewBag.GraphData" />
 
 @Scripts.Render("~/bundles/app")
 
