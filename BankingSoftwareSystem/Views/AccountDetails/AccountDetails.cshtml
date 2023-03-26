@@ -1,0 +1,64 @@
+﻿@model BankingSoftwareSystem.Models.AccountDetailsViewModel
+
+@{
+    ViewBag.Title = "AccountDetails";
+}
+
+<style>
+    @@font-face {
+        font-family: "foundation-icons";
+        src: url('../../fonts/foundation-icons.ttf');
+    }
+    .center {
+       
+        margin: auto;
+        width: 50%;
+        padding: 20px;
+    }
+</style>
+
+
+<div class="row">
+    <div class="col-xl-12 mb-30">
+        <div class="card-box pd-30 height-100-p">
+            <div class="progress-box text-center">
+                <h4>Account Details</h4>
+                <h6>View everything about your account information here</h6>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="balance" value="@Model.CurrentBalance" />
+
+<div >
+<div class="row card-box mb-10">
+    <div class="col-xl-6 mt-30 mb-30 center">
+        <div class="card-box pd-30 height-100-p">
+            <div class="progress-box text-center">
+                <h4>First Name: @Model.FirstName</h4>
+                <br />
+                <h4>Last Name: @Model.LastName</h4>
+                <br />
+                <h4>Account Number: @Model.AccountNumber</h4>
+                <br />
+                <h4>Account Type: @Model.AccountType</h4>
+                <br />
+                <h4> Account Balance: <span id="currentbalance"></span></h4>
+                <br />
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+
+<script>
+    let currentBalance = document.getElementById('balance').value;
+    document.getElementById('currentbalance').innerHTML = (Math.round(currentBalance * 1 * 100) / 100).toFixed(2);
+    // used for Balance in navigation bar top right
+    document.getElementById('currentbalancenav').innerHTML = (Math.round(currentBalance * 1 * 100) / 100).toFixed(2);
+</script>
+
+@Scripts.Render("~/bundles/app")
+

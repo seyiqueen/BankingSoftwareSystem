@@ -154,6 +154,7 @@
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Controllers\AccountDetailsController.cs" />
     <Compile Include="Controllers\TransactionStatementsController.cs" />
     <Compile Include="Controllers\AppController.cs" />
     <Compile Include="Controllers\DepositController.cs" />
@@ -164,6 +165,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\AccountDetailsViewModel.cs" />
     <Compile Include="Models\ApplicationConstants.cs" />
     <Compile Include="Models\DashboardViewModel.cs" />
     <Compile Include="Models\DepositViewModel.cs" />
@@ -236,6 +238,7 @@
     <Content Include="Views\Withdraw\Index.cshtml" />
     <Content Include="Views\Outbound\OutboundTransfer.cshtml" />
     <Content Include="Views\TransactionStatements\TransactionStatements.cshtml" />
+    <Content Include="Views\AccountDetails\AccountDetails.cshtml" />
     <Content Include="Views\Inbound\InboundTransfer.cshtml" />
   </ItemGroup>
   <ItemGroup>
