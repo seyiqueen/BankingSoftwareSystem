@@ -159,6 +159,7 @@
     <Compile Include="Controllers\AppController.cs" />
     <Compile Include="Controllers\DepositController.cs" />
     <Compile Include="Controllers\OutboundController.cs" />
+    <Compile Include="Controllers\InboundController.cs" />
     <Compile Include="Controllers\PortalController.cs" />
     <Compile Include="Controllers\WithdrawController.cs" />
     <Compile Include="Global.asax.cs">
@@ -168,6 +169,7 @@
     <Compile Include="Models\ApplicationConstants.cs" />
     <Compile Include="Models\DashboardViewModel.cs" />
     <Compile Include="Models\DepositViewModel.cs" />
+    <Compile Include="Models\InboundTransferViewModel.cs" />
     <Compile Include="Models\LoginViewModel.cs" />
     <Compile Include="Models\OutboundTransferViewModel.cs" />
     <Compile Include="Models\RegisterViewModel.cs" />
@@ -237,6 +239,7 @@
     <Content Include="Views\Outbound\OutboundTransfer.cshtml" />
     <Content Include="Views\TransactionStatements\TransactionStatements.cshtml" />
     <Content Include="Views\AccountDetails\AccountDetails.cshtml" />
+    <Content Include="Views\Inbound\InboundTransfer.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

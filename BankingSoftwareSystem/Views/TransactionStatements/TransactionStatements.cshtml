@@ -143,7 +143,7 @@
         cache: false,
         success: function (data) {
             // used for Balance in navigation bar top right
-            document.getElementById('currentbalancenav').innerHTML = (Math.round(data.balance * rate * 100) / 100).toFixed(2);
+            document.getElementById('currentbalancenav').innerHTML = (Math.round(data.balance * 1 * 100) / 100).toFixed(2);
         }
     })
 

@@ -130,7 +130,7 @@ namespace BankingSoftwareSystem.Controllers
             MySqlCommand command4 = new MySqlCommand($"SELECT s.Amount, u.AccountNumber, s.IsOwnTransfer, s.Narration, s.TransferDate, s.TransferFromUserAccountId, s.TransferToUserAccountId, u.FirstName, u.LastName, u.AccountNumber FROM AccountStatements s LEFT JOIN UserAccounts u ON s.TransferFromUserAccountId = u.Id OR s.TransferToUserAccountId = u.Id WHERE (s.TransferFromUserAccountId = '{userAccId}' OR s.TransferToUserAccountId = '{userAccId}') AND u.AccountNumber = '{accountNumber}'", conn);
             MySqlDataReader dataReader4 = command4.ExecuteReader();
 
-            var rate = (float)Session[ApplicationConstants.Session_Rates];
+            var rate = 1;
 
             while (dataReader4.Read())
             {

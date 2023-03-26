@@ -1,5 +1,5 @@
-﻿using MySql.Data.MySqlClient;
-using BankingSoftwareSystem.Models;
+﻿using BankingSoftwareSystem.Models;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,16 +8,16 @@ using System.Web.Mvc;
 
 namespace BankingSoftwareSystem.Controllers
 {
-    public class OutboundController : Controller
+    public class InboundController : Controller
     {
-        // GET: Outbound
+        // GET: Inbound
         public ActionResult Index()
         {
             var userAccId = Session[ApplicationConstants.Session_User_Account_Id];
             if (userAccId == null)
                 return RedirectToAction("Login", "Portal");
 
-            var model = new OutboundTransferViewModel();
+            var model = new InboundTransferViewModel();
 
             var userId = Session[ApplicationConstants.Session_User_Id];
 
@@ -33,12 +33,18 @@ namespace BankingSoftwareSystem.Controllers
 
             List<SelectListItem> LoggedInUserAccounts = new List<SelectListItem>();
 
+            model.TransferAbleToAccounts.Add(new SelectListItem
+            {
+                Text = "-- Please Select --",
+                Value = "-1",
+            });
+
             while (dataReader.Read())
             {
                 LoggedInUserAccounts.Add(new SelectListItem
                 {
-                    Text = dataReader.GetString("FirstName") + " " + dataReader.GetString("LastName") + " - " + dataReader.GetString("AccountNumber"),
                     Value = dataReader.GetString("Id"),
+                    Text = dataReader.GetString("FirstName") + " " + dataReader.GetString("LastName") + " - " + dataReader.GetString("AccountNumber"),
                     Selected = dataReader.GetString("Id") == (string)userAccId,
                 });
 
@@ -48,67 +54,25 @@ namespace BankingSoftwareSystem.Controllers
                     model.AccountNumber = dataReader.GetString("AccountNumber");
                     model.AccountType = dataReader.GetString("Type");
                 }
+                else
+                {
+                    model.TransferAbleToAccounts.Add(new SelectListItem
+                    {
+                        Text = dataReader.GetString("FirstName") + " " + dataReader.GetString("LastName") + " - " + dataReader.GetString("AccountNumber"),
+                        Value = dataReader.GetString("AccountNumber"),
+                    });
+                }
             }
 
+            ViewBag.TransferAbleToAccounts = model.TransferAbleToAccounts;
             ViewBag.LoggedInUserAccounts = LoggedInUserAccounts;
             model.LoggedInUserAccounts = LoggedInUserAccounts;
             dataReader.Close();
 
             conn.Close();
 
-            return View("OutboundTransfer", model);
+            return View("InboundTransfer", model);
         }
-
-        public JsonResult VerifyAccountNumber(string accountNumber)
-        {
-            if (!string.IsNullOrWhiteSpace(accountNumber))
-            {
-                MySqlConnection conn = new MySqlConnection(ApplicationConstants.DatabaseConnectionString);
-                conn.Open();
-
-                var query = $"USE {ApplicationConstants.DB};";
-                MySqlCommand command = new MySqlCommand(query, conn);
-                command.ExecuteNonQuery();
-
-                command = new MySqlCommand($"SELECT u.Id, u.AccountNumber, u.FirstName, u.LastName, a.Type FROM UserAccounts u LEFT JOIN AccountTypes a ON u.AccountTypeId = a.Id WHERE AccountNumber = '{accountNumber}'", conn);
-                MySqlDataReader dataReader = command.ExecuteReader();
-
-                if (!dataReader.HasRows)
-                {
-                    conn.Close();
-                    return Json(new { error = "notfound" }, JsonRequestBehavior.AllowGet);
-                }
-
-                while (dataReader.Read())
-                {
-                    if (dataReader.GetString("Id") != (string)Session[ApplicationConstants.Session_User_Account_Id])
-                    {
-
-                        string _accountNumber = dataReader.GetString("AccountNumber");
-                        string _lastName = dataReader.GetString("LastName");
-                        string _firstName = dataReader.GetString("FirstName");
-                        string _type = dataReader.GetString("Type");
-
-                        conn.Close();
-                        return Json(new
-                        {
-                            error = "",
-                            receiverAccountNumber = _accountNumber,
-                            receiverFullName = _firstName + " " + _lastName,
-                            receiverAccountType = _type
-                        }, JsonRequestBehavior.AllowGet);
-                    }
-                    else
-                    {
-                        conn.Close();
-
-                        return Json(new { error = "same" }, JsonRequestBehavior.AllowGet);
-                    }
-                }
-            }
-            return Json(new { error = "invalid" }, JsonRequestBehavior.AllowGet);
-        }
-
         public JsonResult TransferMoney(float amount, string accountNumber, string narration)
         {
             MySqlConnection conn = new MySqlConnection(ApplicationConstants.DatabaseConnectionString);
@@ -137,7 +101,7 @@ namespace BankingSoftwareSystem.Controllers
                 return Json(new
                 {
                     success = false,
-                    message = "Insufficient Funds to process this Transaction",
+                    message = "Insufficient Funds to Transfer this Amount.",
                 }, JsonRequestBehavior.AllowGet);
             }
 
@@ -162,6 +126,7 @@ namespace BankingSoftwareSystem.Controllers
 
             if (rowCount > 0)
             {
+
                 senderBalance -= amount;
 
                 MySqlCommand command5 = new MySqlCommand($"UPDATE UserAccounts SET Balance = {senderBalance} WHERE Id = '{Session[ApplicationConstants.Session_User_Account_Id]}'", conn);
@@ -171,7 +136,7 @@ namespace BankingSoftwareSystem.Controllers
                 {
                     var todaysDate = DateTime.Now.ToUniversalTime();
 
-                    MySqlCommand command6 = new MySqlCommand($"INSERT INTO AccountStatements (TransferToUserAccountId, TransferFromUserAccountId, Amount, IsOwnTransfer, TransferDate, Narration) VALUES ('{receiverId}', '{Session[ApplicationConstants.Session_User_Account_Id]}', {amount}, false, '{todaysDate.ToString("yyyy-MM-dd HH:mm:ss")}', '{narration}') ", conn);
+                    MySqlCommand command6 = new MySqlCommand($"INSERT INTO AccountStatements (TransferToUserAccountId, TransferFromUserAccountId, Amount, IsOwnTransfer, TransferDate, Narration) VALUES ('{receiverId}', '{Session[ApplicationConstants.Session_User_Account_Id]}', {amount}, true, '{todaysDate.ToString("yyyy-MM-dd HH:mm:ss")}', '{narration}') ", conn);
                     int rowCount4 = command6.ExecuteNonQuery();
 
                     if (rowCount4 > 0)
@@ -189,6 +154,7 @@ namespace BankingSoftwareSystem.Controllers
             }
 
             conn.Close();
+
 
             return Json(new
             {
