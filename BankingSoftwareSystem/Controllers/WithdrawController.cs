@@ -104,7 +104,7 @@ namespace BankingSoftwareSystem.Controllers
             Session[ApplicationConstants.Session_User_Account_Id] = uid;
             return RedirectToAction("Index");
         }
-        public ActionResult InitiateWithdraw(decimal amount)
+        public JsonResult InitiateWithdraw(decimal amount, string otpcode)
         {
             MySqlConnection conn = new MySqlConnection(ApplicationConstants.DatabaseConnectionString);
             conn.Open();
@@ -112,6 +112,16 @@ namespace BankingSoftwareSystem.Controllers
             var query = $"USE {ApplicationConstants.DB};";
             MySqlCommand command = new MySqlCommand(query, conn);
             command.ExecuteNonQuery();
+
+            var otpcommand = new MySqlCommand($"select * from otpcodes WHERE codes = '{otpcode}'", conn);
+
+            var otpdataReader = otpcommand.ExecuteReader();
+
+            if (!otpdataReader.HasRows) { 
+                conn.Close();
+                return Json(new {success = false, message = "Invalid OTP Code"}, JsonRequestBehavior.AllowGet);
+            }
+            otpdataReader.Close();
 
             var userAccId = Session[ApplicationConstants.Session_User_Account_Id];
 
@@ -136,7 +146,7 @@ namespace BankingSoftwareSystem.Controllers
             command3.ExecuteNonQuery();
 
             conn.Close();
-            return RedirectToAction("Index");
+            return Json (new { success = true, message = "Withdrwal successful" }, JsonRequestBehavior.AllowGet);
         }
     }
 }
